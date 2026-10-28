@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Homework</title>
+  <meta name="description" content="Organize assignments, track deadlines and sync ManageBac.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Shown until the app starts. If the scripts can't load, this explains why. -->
+  <div id="boot" style="font-family: system-ui, sans-serif; max-width: 560px; margin: 12vh auto; padding: 0 1.5rem; line-height: 1.6; color: #1b2440;">
+    <h1 style="font-size: 1.6rem; margin: 0 0 0.5rem;">Loading Homework…</h1>
+    <p id="boot-help" style="display: none;">
+      The app couldn't start. Most of the time this happens when <strong>index.html is opened from inside the zip file</strong>.
+      Right-click the zip, choose <strong>Extract All</strong>, then open <strong>index.html</strong> from the extracted
+      <strong>homework-tracker</strong> folder. Keep the <strong>css</strong> and <strong>js</strong> folders next to it.
+    </p>
+    <pre id="boot-error" style="display: none; white-space: pre-wrap; background: #fdeded; color: #9b2c2c; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem;"></pre>
+  </div>
+  <script>
+    // If something goes wrong while starting, show the reason on the page
+    window.addEventListener("error", function (event) {
+      var help = document.getElementById("boot-help");
+      var box = document.getElementById("boot-error");
+      if (!help || !document.getElementById("boot")) return;
+      help.style.display = "block";
+      var what = event.message || ("Couldn't load " + (event.target && (event.target.src || event.target.href)));
+      box.textContent = "Error: " + what;
+      box.style.display = "block";
+    }, true);
+    // If nothing has started after 3 seconds, show the help text
+    setTimeout(function () {
+      var help = document.getElementById("boot-help");
+      if (help && document.getElementById("boot")) help.style.display = "block";
+    }, 3000);
+  </script>
+
+  <!-- =================== LOG IN / SIGN UP =================== -->
+  <div id="auth" class="auth" hidden>
+    <aside class="auth-brand">
+      <div class="brand brand-on-dark">
+        <span class="brand-mark" data-icon="book"></span>
+        <span class="brand-name">Homework</span>
+      </div>
+
+      <div class="auth-pitch">
+        <h1>Every assignment, in one calm place.</h1>
+        <p>Plan your week, sync ManageBac, and see what's due before it sneaks up on you.</p>
+      </div>
+
+      <ul class="auth-preview" aria-hidden="true">
+        <li style="--c:#3b5bdb"><strong>Problem set 5</strong><span>Math</span><em>Due tomorrow</em></li>
+        <li style="--c:#1f9d6a"><strong>Lab write-up: enzymes</strong><span>Biology</span><em>Due Friday</em></li>
+        <li style="--c:#e0662f"><strong>Essay draft</strong><span>English</span><em>Due in 6 days</em></li>
+      </ul>
+    </aside>
+
+    <main class="auth-main">
+      <div class="auth-card">
+        <div class="tabs" role="tablist" aria-label="Account">
+          <button id="tab-login" class="tab" role="tab" aria-selected="true" aria-controls="login-form">Log in</button>
+          <button id="tab-signup" class="tab" role="tab" aria-selected="false" aria-controls="signup-form">Sign up</button>
+        </div>
+
+        <form id="login-form" class="auth-form" novalidate>
+          <h2>Welcome back</h2>
+          <p class="auth-sub">Log in to see what's due.</p>
+          <div class="field">
+            <label for="login-email">Email</label>
+            <input id="login-email" type="email" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" autocomplete="current-password" required>
+          </div>
+          <label class="check">
+            <input id="login-remember" type="checkbox" checked>
+            <span>Keep me logged in</span>
+          </label>
+          <p class="form-error" id="login-error" role="alert"></p>
+          <button type="submit" class="btn btn-primary btn-block">Log in</button>
+        </form>
+
+        <form id="signup-form" class="auth-form" novalidate hidden>
+          <h2>Create your account</h2>
+          <p class="auth-sub">It takes less than a minute.</p>
+          <div class="field">
+            <label for="signup-name">Your name</label>
+            <input id="signup-name" type="text" autocomplete="given-name" maxlength="40" required>
+          </div>
+          <div class="field">
+            <label for="signup-email">Email</label>
+            <input id="signup-email" type="email" autocomplete="email" required>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="signup-password">Password</label>
+              <input id="signup-password" type="password" autocomplete="new-password" minlength="8" required>
+            </div>
+            <div class="field">
+              <label for="signup-confirm">Confirm password</label>
+              <input id="signup-confirm" type="password" autocomplete="new-password" required>
+            </div>
+          </div>
+          <p class="hint">At least 8 characters.</p>
+          <p class="form-error" id="signup-error" role="alert"></p>
+          <button type="submit" class="btn btn-primary btn-block">Create account</button>
+        </form>
+
+        <p class="auth-note">Accounts and assignments are saved on this device only.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- =================== THE APP =================== -->
+  <div id="app" class="app" hidden>
+
+    <!-- Left side panel -->
+    <aside id="sidebar" class="sidebar" aria-label="Main menu">
+      <div class="brand brand-on-dark">
+        <span class="brand-mark" data-icon="book"></span>
+        <span class="brand-name">Homework</span>
+      </div>
+
+      <button id="sidebar-new" class="btn btn-marker btn-block">
+        <span data-icon="plus"></span> New assignment
+      </button>
+
+      <nav id="nav" class="nav"></nav>
+
+      <div class="side-section">
+        <div class="side-head">
+          <span>Classes</span>
+          <button id="add-class" class="icon-btn icon-btn-dark" aria-label="Add class" title="Add class">
+            <span data-icon="plus"></span>
+          </button>
+        </div>
+        <ul id="class-list" class="class-list"></ul>
+      </div>
+
+      <div class="side-bottom">
+        <button id="sync-chip" class="sync-chip"></button>
+
+        <div class="user">
+          <span id="user-avatar" class="avatar"></span>
+          <span class="user-text">
+            <strong id="user-name"></strong>
+            <small id="user-email"></small>
+          </span>
+          <button id="user-menu-btn" class="icon-btn icon-btn-dark" aria-label="Account menu" aria-haspopup="menu" aria-expanded="false">
+            <span data-icon="more"></span>
+          </button>
+          <div id="user-menu" class="menu" role="menu" hidden>
+            <button role="menuitem" data-action="settings"><span data-icon="sliders"></span> Settings</button>
+            <button role="menuitem" data-action="logout"><span data-icon="logout"></span> Log out</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div id="sidebar-backdrop" class="backdrop"></div>
+
+    <!-- Main area -->
+    <div class="main">
+      <header class="topbar">
+        <button id="menu-btn" class="icon-btn mobile-only" aria-label="Open menu">
+          <span data-icon="menu"></span>
+        </button>
+        <h1 id="page-title" class="page-title"></h1>
+        <label class="search">
+          <span data-icon="search"></span>
+          <span class="visually-hidden">Search assignments</span>
+          <input id="search" type="search" placeholder="Search assignments">
+        </label>
+        <button id="top-new" class="btn btn-primary" aria-label="New assignment">
+          <span data-icon="plus"></span> <span class="btn-label">New assignment</span>
+        </button>
+      </header>
+
+      <div id="view" class="view"></div>
+    </div>
+  </div>
+
+  <!-- =================== RIGHT SIDE PANEL (add / edit) =================== -->
+  <div id="drawer-backdrop" class="backdrop backdrop-drawer"></div>
+  <aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden>
+    <form id="task-form" class="drawer-inner" novalidate>
+      <header class="drawer-head">
+        <h2 id="drawer-title">New assignment</h2>
+        <button type="button" class="icon-btn" data-close-drawer aria-label="Close">
+          <span data-icon="x"></span>
+        </button>
+      </header>
+
+      <div class="drawer-body">
+        <div class="field">
+          <label for="task-title">Title</label>
+          <input id="task-title" type="text" maxlength="140" placeholder="e.g. Read chapter 4" required>
+        </div>
+
+        <div class="field">
+          <label for="task-class">Class</label>
+          <div class="input-with-btn">
+            <select id="task-class"></select>
+            <button type="button" id="task-new-class" class="btn btn-ghost">New class</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="task-due">Due date</label>
+          <input id="task-due" type="date" required>
+          <div class="quick-dates" id="quick-dates">
+            <button type="button" data-days="0">Today</button>
+            <button type="button" data-days="1">Tomorrow</button>
+            <button type="button" data-days="7">Next week</button>
+          </div>
+        </div>
+
+        <label class="switch">
+          <input id="task-important" type="checkbox">
+          <span class="switch-track" aria-hidden="true"></span>
+          <span>Mark as important</span>
+        </label>
+
+        <div class="field">
+          <label for="task-notes">Notes</label>
+          <textarea id="task-notes" rows="5" placeholder="Pages, links, what the teacher said…"></textarea>
+        </div>
+
+        <p id="task-source-note" class="source-note" hidden>
+          Imported from ManageBac. If the teacher changes the title or date, the next sync updates it here.
+        </p>
+        <p class="form-error" id="task-error" role="alert"></p>
+      </div>
+
+      <footer class="drawer-foot">
+        <button type="button" id="task-delete" class="btn btn-danger-ghost" hidden>
+          <span data-icon="trash"></span> Delete
+        </button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-ghost" data-close-drawer>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="task-save">Save</button>
+      </footer>
+    </form>
+  </aside>
+
+  <!-- =================== CLASS POPUP =================== -->
+  <dialog id="class-dialog" class="dialog" aria-labelledby="class-dialog-title">
+    <form id="class-form" method="dialog" novalidate>
+      <h2 id="class-dialog-title">New class</h2>
+      <div class="field">
+        <label for="class-name">Class name</label>
+        <input id="class-name" type="text" maxlength="40" placeholder="e.g. Biology" required>
+      </div>
+      <fieldset class="swatches" id="class-swatches">
+        <legend>Color</legend>
+      </fieldset>
+      <p class="form-error" id="class-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button type="button" id="class-delete" class="btn btn-danger-ghost" hidden>Delete class</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-ghost" id="class-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save class</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <!-- Scripts load in this order: helpers, accounts, ManageBac, then the app -->
+  <script src="js/helpers.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/managebac.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
