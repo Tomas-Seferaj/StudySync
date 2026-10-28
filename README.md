@@ -1,11 +1,17 @@
 Homework
+
 A homework tracker that helps students organize assignments, track deadlines, and never miss a due date.
 Built with plain HTML, CSS and JavaScript. No frameworks and no build tools: open `index.html` and it runs.
 Features
+
 Accounts: sign up and log in, with passwords protected using PBKDF2 hashing
+
 Dashboard: a greeting, your week at a glance, and quick stats (overdue, due today, next 7 days, finished)
+
 Side menu with Dashboard, Upcoming, Calendar and Completed pages
+
 Classes: color-coded, each with its own page and assignment count
+
 Calendar: month view; click a day to add an assignment on that date
 Side panel editor: add or edit title, class, due date, notes and an "important" star
 ManageBac sync: new assignments from school appear automatically
